@@ -1,0 +1,87 @@
+---
+- hosts: "elk"
+  become: true
+  gather_facts: yes
+
+# prepeare system    
+  tasks: 
+  - name: INSTALL mc
+    yum: name=mc state=present
+
+  - name: INSTALL java-openjdk-devel
+    yum: name=java-1.8.0-openjdk-devel.x86_64 state=present
+
+  - name: INSTALL java-openjdk
+    yum: name=java-1.8.0-openjdk.x86_64 state=present
+
+# install elasticsearch  
+  - name: COPY elasticsearch RPM 
+    copy:
+      src: rpms/elasticsearch_7.17.3_x86_64-224190-ec3fa5.rpm
+      dest: /home/vagrant/
+
+  - name: INSTALL elasticsearch
+    yum:
+      name: /home/vagrant/elasticsearch_7.17.3_x86_64-224190-ec3fa5.rpm
+      state: present
+
+  - name: COPY jvm.options 
+    copy:
+      src: cnfgs/jvm.options
+      dest: /etc/elasticsearch/jvm.options.d/
+
+  - name: START/ENABLE elasticsearch
+    service: 
+      name: elasticsearch
+      state: started
+      enabled: yes
+
+# install kibana
+  - name: COPY kibana RPM
+    copy:
+      src: rpms/kibana_7.17.3_x86_64-224190-3badd3.rpm
+      dest: /home/vagrant/
+      owner: root
+
+  - name: INSTALL kibana
+    yum:
+      name: /home/vagrant/kibana_7.17.3_x86_64-224190-3badd3.rpm
+      state: present
+
+  - name: COPY kibana.yml 
+    copy:
+      src: cnfgs/kibana.yml
+      dest: /etc/kibana/
+
+  - name: START/ENABLE kibana
+    service: 
+      name: kibana
+      state: started
+      enabled: yes
+
+# install logstash
+  - name: COPY logstash RPM
+    copy:
+      src: rpms/logstash_7.17.3_x86_64-224190-392536.rpm
+      dest: /home/vagrant/
+
+  - name: INSTALL logstash
+    yum:
+      name: /home/vagrant/logstash_7.17.3_x86_64-224190-392536.rpm
+      state: present
+
+  - name: COPY logstash.yml 
+    copy:
+      src: cnfgs/logstash.yml
+      dest: /etc/logstash/
+
+  - name: COPY logstash-nginx-es.conf
+    copy:
+      src: cnfgs/logstash-nginx-es.conf
+      dest: /etc/logstash/conf.d/
+
+  - name: START/ENABLE logstash
+    service: 
+      name: logstash
+      state: started
+      enabled: yes

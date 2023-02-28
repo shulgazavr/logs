@@ -1,0 +1,40 @@
+---
+- hosts: "web"
+  become: true
+  gather_facts: yes
+
+  tasks: 
+# install filebeat
+  - name: COPY filebeat RPM
+    copy:
+      src: rpms/filebeat_7.17.3_x86_64-224190-59ccad.rpm
+      dest: /home/vagrant/
+
+  - name: INSTALL filebeat
+    yum:
+      name: /home/vagrant/filebeat_7.17.3_x86_64-224190-59ccad.rpm
+      state: present
+
+  - name: COPY filebeat.yml 
+    copy:
+      src: cnfgs/filebeat.yml
+      dest: /etc/filebeat/
+
+  - name: START/ENABLE filebeat
+    service: 
+      name: filebeat
+      state: started
+      enabled: yes
+
+# install nginx
+  - name: INSTALL EPEL-RELEASE REPO
+    yum: name=epel-release state=present
+
+  - name: INSTALL NGINX WEB
+    yum: name=nginx state=present
+
+  - name: START/ENABLE NGINX
+    service: 
+      name: nginx
+      state: started
+      enabled: yes
